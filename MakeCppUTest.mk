@@ -24,7 +24,7 @@ endif
 # SRC_DIRS specifies directories containing
 # production code C and CPP files.
 #
-SRC_FILES += src/modules
+SRC_FILES += 
 SRC_DIRS += src/modules
 
 # --- TEST_SRC_FILES and TEST_SRC_DIRS ---
@@ -129,4 +129,4 @@ CPPUTEST_CXXFLAGS += -Wno-c++98-compat
 
 # Look at $(CPPUTEST_HOME)/build/MakefileWorker.mk for more controls
 
-include $(CPPUTEST_HOME) build/MakefileWorker.mk
+include $(CPPUTEST_HOME)/build/MakefileWorker.mk
