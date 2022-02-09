@@ -1,0 +1,9 @@
+10 let m = -9999
+20 input k
+30 input x
+40 if x <= m goto 60
+50 let m = x
+60 let k = k - 1
+70 if k >= 0 goto 30
+80 print m
+90 end

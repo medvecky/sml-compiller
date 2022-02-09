@@ -1,0 +1,8 @@
+10 let c = 10;
+20 let s = 0;
+30 input i
+40 let s = s + i
+50 let c = c - 1
+60 if c >= 0 goto 30
+70 print s
+80 end
