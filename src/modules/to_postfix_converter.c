@@ -1,45 +1,57 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include <stddef.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 #include "to_postfix_converter.h"
 #include "stack.h"
 
 static int getOperatorValue(char operator);
+static bool isNumber(char * string);
+static bool isVariable(char * string);
 
-void convertToPostfix(char infix[], char postfix[])
+void convertToPostfix(char infix[], PostfixEntry postfix[])
 {
     StackNodePtr stackPtr = NULL;
     size_t infixCounter = 0;
     size_t postfixCounter = 0;
-    char currentCharacter;
+    char character;
 
     Stack_push(&stackPtr, '(');
-    while ((currentCharacter = infix[infixCounter++]) != '\n')
+    while ((character = infix[infixCounter++]) != '\n')
         ;
-    infix[--infixCounter] = ')';
+    infix[--infixCounter] = ' ';
+    infix[++infixCounter] = ')';
     infix[++infixCounter] = '\0';
     infixCounter = 0;
-
-    while (!Stack_isEmpty(stackPtr) &&
-            (currentCharacter = infix[infixCounter++]) != '\0')
+    
+    char * token = strtok(infix, " ");
+    while (!Stack_isEmpty(stackPtr) && token != NULL) 
     {
-        if (isdigit(currentCharacter))
+        if (isNumber(token))
         {
-            postfix[postfixCounter++] = currentCharacter;
+            postfix[postfixCounter].item = atoi(token);
+            postfix[postfixCounter++].type = CONSTANT;
         } // end if
-        else if (currentCharacter == '(')
+        else if (isVariable(token))
         {
-            Stack_push(&stackPtr, currentCharacter);
+            postfix[postfixCounter].item = token[0]; 
+            postfix[postfixCounter++].type = VARIABLE;
         } // end else if
-        else if (isOperator(currentCharacter))
+        else if (strlen(token) == 1 && token[0] == '(')
+        {
+            Stack_push(&stackPtr, token[0]);
+        } // end else if
+        else if (strlen(token) == 1 && isOperator(token[0]))
         {
             char operator;
+            char currentCharacter = token[0];
             while (isOperator(operator = Stack_getTop(stackPtr)))
             { 
                 if (precedence(operator, currentCharacter) >= 0)
                 {       
-                    postfix[postfixCounter++] = operator;
+                    postfix[postfixCounter].item = operator;
+                    postfix[postfixCounter++].type = OPERATOR;
                     Stack_pop(&stackPtr);
                 } // end if
                 else
@@ -49,19 +61,22 @@ void convertToPostfix(char infix[], char postfix[])
             } // end while
             Stack_push(&stackPtr, currentCharacter);
         } // end else if
-        else if (currentCharacter == ')')
+        else if (strlen(token) == 1 && token[0] == ')')
         {
             char operator;
             while (isOperator(operator = Stack_getTop(stackPtr)))
             {
-                postfix[postfixCounter++] = operator;
+                postfix[postfixCounter].item = operator;
+                postfix[postfixCounter++].type = OPERATOR;
                 Stack_pop(&stackPtr);
             } // end while
             
             Stack_pop(&stackPtr);
         } // end else if
-    } // end while
 
+        token = strtok(NULL, " ");
+    } // end while
+    
     puts("End of convertToPostfix");
 } // end function convertToPostfix
 
@@ -107,12 +122,23 @@ static int getOperatorValue(char operator)
             return 1;
         case '*' :
         case '/' :
-        case '%' :
             return 2;
-        case '^':
-            return 3;
         default:
             return 0;
     } // end switch
 
 } // end function getOperatorValue
+
+static bool isNumber(char * string)
+{
+     while (*string) {
+        if (isdigit(*string++) == 0) return false;
+    }
+
+    return true;
+} // end function isNumber
+
+static bool isVariable(char * string)
+{
+    return strlen(string) == 1 && isalpha(string[0]);
+} // end function isVariable
