@@ -19,5 +19,6 @@ int Stack_pop(StackNodePtr * topPtr);
 bool Stack_isEmpty(StackNodePtr topPtr);
 void Stack_print( StackNodePtr currentPtr);
 int Stack_getTop(StackNodePtr topPtr);
+void Stack_free(StackNodePtr * topPtr);
 
 #endif

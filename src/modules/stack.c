@@ -62,3 +62,15 @@ int Stack_getTop(StackNodePtr topPtr)
 {
     return topPtr->data;
 } // end function stackTop
+
+void Stack_free(StackNodePtr * topPtr)
+{
+    StackNodePtr tempPtr = *topPtr;
+    StackNodePtr nextPtr;
+    while (tempPtr != NULL)
+    {
+        nextPtr = (*tempPtr).nextPtr;
+        free(tempPtr);
+        tempPtr = nextPtr;
+    }
+} // end function Stack_free

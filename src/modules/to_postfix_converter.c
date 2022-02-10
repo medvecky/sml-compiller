@@ -80,6 +80,7 @@ int convertToPostfix(char infix[], PostfixEntry postfix[])
         } // end else if
         else
         {
+            Stack_free(&stackPtr);
             return -1;
         } // end else
         token = strtok(NULL, " ");
