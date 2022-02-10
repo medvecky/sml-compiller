@@ -15,23 +15,17 @@ int main()
     puts("Enter infix string");
     fgets(infixString, STRING_LENGTH, stdin);
 
-    size_t counter = 0;
-    size_t lineLength = 0;
-    char character;
-   
-    while((character = infixString[counter++]) != '\0')
-    {
-        if (!isspace(character) && character != ')' && character != '(')
-        {
-            lineLength++;
-        } // end if
-    } // end while
-    
-    convertToPostfix(infixString, postfixString); 
+    int lineLength  = convertToPostfix(infixString, postfixString); 
 
-    for (size_t index = 0; index < lineLength; index++)
+    if (lineLength == -1)
     {
-        printf("Entry %zu: ", index);
+        puts("convertToPostfix: ERROR");
+        return EXIT_FAILURE;
+    } // end if 
+
+    for (int index = 0; index < lineLength; index++)
+    {
+        printf("Entry %d: ", index);
        if (postfixString[index].type == CONSTANT)
        {
            printf("type constant, value: %d\n", postfixString[index].item);
@@ -44,7 +38,6 @@ int main()
        {
            printf("type variable, value: %c\n", postfixString[index].item);
        } // end else
-
     }
 
     puts("End of program.");

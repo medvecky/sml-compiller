@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
@@ -10,7 +11,11 @@ static int getOperatorValue(char operator);
 static bool isNumber(char * string);
 static bool isVariable(char * string);
 
-void convertToPostfix(char infix[], PostfixEntry postfix[])
+/* the function converts input infix string to postfix view
+   arguments: a pointer to infix string, a pointer to PostfixEntry array
+   return value - number of converted tokens or -1 as an error
+*/
+int convertToPostfix(char infix[], PostfixEntry postfix[])
 {
     StackNodePtr stackPtr = NULL;
     size_t infixCounter = 0;
@@ -73,11 +78,14 @@ void convertToPostfix(char infix[], PostfixEntry postfix[])
             
             Stack_pop(&stackPtr);
         } // end else if
-
+        else
+        {
+            return -1;
+        } // end else
         token = strtok(NULL, " ");
     } // end while
-    
-    puts("End of convertToPostfix");
+   
+    return postfixCounter;
 } // end function convertToPostfix
 
 bool isOperator(char c)
@@ -88,8 +96,6 @@ bool isOperator(char c)
         case '-' :
         case '*' :
         case '/' :
-        case '%' :
-        case '^' :
             return true;
         default:
             return false;
