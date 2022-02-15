@@ -1,6 +1,5 @@
 #include "CppUTest/TestHarness.h"
 #include "CppUTest/UtestMacros.h"
-#include <cstring>
 
 extern "C"
 {
