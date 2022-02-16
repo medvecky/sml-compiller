@@ -30,6 +30,7 @@ clean:
 	rm -rf bin
 	rm -rf build
 	rm -f *~
+	rm -f .*~
 	rm -f *.*~
 	rm -f src/*.*~
 	rm -f src/modules/*.*~
