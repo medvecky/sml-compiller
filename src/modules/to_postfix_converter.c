@@ -36,12 +36,12 @@ int convertToPostfix(char infix[], PostfixEntry postfix[])
         if (isNumber(token))
         {
             postfix[postfixCounter].item = atoi(token);
-            postfix[postfixCounter++].type = CONSTANT;
+            postfix[postfixCounter++].type = CONST;
         } // end if
         else if (isVariable(token))
         {
             postfix[postfixCounter].item = token[0]; 
-            postfix[postfixCounter++].type = VARIABLE;
+            postfix[postfixCounter++].type = VAR;
         } // end else if
         else if (strlen(token) == 1 && token[0] == '(')
         {

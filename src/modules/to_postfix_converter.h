@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
-enum postfixEntryType {CONSTANT, VARIABLE, OPERATOR};
+enum postfixEntryType {CONST, VAR, OPERATOR};
 typedef enum postfixEntryType PostfixEntryType;
 
 struct postfixEntry
