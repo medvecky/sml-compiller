@@ -7,7 +7,30 @@
 #include "symbol_table.h"
 #include "to_postfix_converter.h"
 #include "counters.h"
+#include "commands.h"
 
+static int generateArithmeticOperationCode(
+        size_t op1, 
+        size_t op2, 
+        int operationCode, 
+        Counters * counters, 
+        SmlArray * sml);
+
+
+/* Convert postfix array data to sml code 
+ *  argguments:
+ *  PostfixEntry - pointer to postfix array
+ *  postfixSize - size of postfix array
+ *  symbolTable - pointer to SymbolTable
+ *  counters - ponter to counters
+ *  sml - pointer to sml array
+ *
+ *  return value - location where stored result of expression
+ *  or -1 as error sign
+ *
+ *  function modifies symbolTable and counters
+ *  result sml code stores in sml array
+ */
 int evaluatePostfixExpression(
         PostfixEntry * postfix, 
         size_t postfixSize,
@@ -29,6 +52,7 @@ int evaluatePostfixExpression(
             int location = SymbolTable_findLocation(symbolTable, postfix[index].item, type);
             if (location == -1 && type == CONSTANT)
             {
+                Stack_free(&stackPtr);
                 return -1;
             } // end if
             else if (location == -1)
@@ -36,9 +60,15 @@ int evaluatePostfixExpression(
                 location = Counters_getDataCounter(counters);
                 Counters_incrementDataCounter(counters);
                 if (location == -1)
+                {
+                    Stack_free(&stackPtr);
                     return -1;
+                } // end if
                 if (!SymbolTable_set(symbolTable, postfix[index].item, type, location))
+                {
+                    Stack_free(&stackPtr);
                     return -1;
+                } // end if
             } // end else if
             Stack_push(&stackPtr, location);
         } // end if 
@@ -60,6 +90,11 @@ int evaluatePostfixExpression(
     return Stack_pop(&stackPtr);
 } // end function evaluatePostfixExpression
 
+/*
+ * Generates math operation code
+ * returns memory location for result
+ * or -1 as error
+ */
 int calculate(
         size_t op1, 
         size_t op2,
@@ -67,39 +102,49 @@ int calculate(
         Counters * counters,
         SmlArray * sml)
 {
-    int tempLocation;
     switch(operation)
     {
         case '+':
-            if (!SmlArray_addCommand(sml, 20 * 100 + op1)) return -1; 
-            if (!SmlArray_addCommand(sml, 30 * 100 + op2)) return -1;
-            if ((tempLocation = Counters_getDataCounter(counters)) == -1) return -1;
-            Counters_incrementDataCounter(counters);
-            if (!SmlArray_addCommand(sml, 21 * 100 + tempLocation)) return -1;
-            return tempLocation;
+            return generateArithmeticOperationCode(op1, op2, ADD, counters, sml);
         case '-': 
-            if (!SmlArray_addCommand(sml, 20 * 100 + op1)) return -1; 
-            if (!SmlArray_addCommand(sml, 31 * 100 + op2)) return -1;
-            if ((tempLocation = Counters_getDataCounter(counters)) == -1) return -1;
-            Counters_incrementDataCounter(counters);
-            if (!SmlArray_addCommand(sml, 21 * 100 + tempLocation)) return -1;
-            return tempLocation;
+            return generateArithmeticOperationCode(op1, op2, SUBSTRACT, counters, sml);
         case '*':
-            if (!SmlArray_addCommand(sml, 20 * 100 + op1)) return -1; 
-            if (!SmlArray_addCommand(sml, 33 * 100 + op2)) return -1;
-            if ((tempLocation = Counters_getDataCounter(counters)) == -1) return -1;
-            Counters_incrementDataCounter(counters);
-            if (!SmlArray_addCommand(sml, 21 * 100 + tempLocation)) return -1;
-            return tempLocation;
+            return generateArithmeticOperationCode(op1, op2, MULTIPLY, counters, sml);
         case '/':
-            if (!SmlArray_addCommand(sml, 20 * 100 + op1)) return -1; 
-            if (!SmlArray_addCommand(sml, 32 * 100 + op2)) return -1;
-            if ((tempLocation = Counters_getDataCounter(counters)) == -1) return -1;
-            Counters_incrementDataCounter(counters);
-            if (!SmlArray_addCommand(sml, 21 * 100 + tempLocation)) return -1;
-            return tempLocation;
+            return generateArithmeticOperationCode(op1, op2, DIVIDE, counters, sml);
         default:
             puts("calculate: illegal opertion");
             return -1;
     } // end switch
 } // end function calculate
+
+static int generateArithmeticOperationCode(
+        size_t op1, 
+        size_t op2, 
+        int operationCode, 
+        Counters * counters, 
+        SmlArray * sml)
+{
+    int tempLocation;
+
+    if (!SmlArray_addCommand(sml, LOAD * 100 + op1) || 
+            Counters_getInstructionCounter(counters) == -1) 
+        return -1; 
+    Counters_incrementInstructionCounter(counters);
+    
+    if (!SmlArray_addCommand(sml, operationCode * 100 + op2) ||
+            Counters_getInstructionCounter(counters) == -1) 
+        return -1;
+    Counters_incrementInstructionCounter(counters);
+    
+    if ((tempLocation = Counters_getDataCounter(counters)) == -1)
+        return -1;
+    Counters_incrementDataCounter(counters);
+
+    if (!SmlArray_addCommand(sml, STORE * 100 + tempLocation) || 
+            Counters_getInstructionCounter(counters) == -1)
+        return -1;
+    Counters_incrementInstructionCounter(counters);
+    
+    return tempLocation;
+} // end function generateArithmeticOperationCode
