@@ -1,9 +1,14 @@
-10 let m = -9999
+5 rem set m as max hodler
+10 input m 
+15 rem set k as loop counter
 20 input k
-30 input x
-40 if x <= m goto 60
-50 let m = x
-60 let k = k - 1
-70 if k >= 0 goto 30
-80 print m
-90 end
+25 rem set s as step
+30 input s
+35 rem x - current value
+40 input x
+50 if x <= m goto 70
+60 let m = x
+70 let k = k - s 
+80 if k >= 0 goto 40
+90 print m
+100 end
