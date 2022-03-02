@@ -76,3 +76,10 @@ TEST(TO_POSTFIX_CONVERTER, bad_operator)
     int result = convertToPostfix(infix, postfix);
     CHECK_EQUAL(-1, result);
 }
+
+TEST(TO_POSTFIX_CONVERTER, bad_end_of_string)
+{
+    std::strcpy(infix, "( 6 + a ) * b - c / \n");
+    int result = convertToPostfix(infix, postfix);
+    CHECK_EQUAL(-1, result);
+}
