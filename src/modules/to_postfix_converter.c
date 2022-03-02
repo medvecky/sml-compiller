@@ -25,6 +25,13 @@ int convertToPostfix(char infix[], PostfixEntry postfix[])
     Stack_push(&stackPtr, '(');
     while ((character = infix[infixCounter++]) != '\n')
         ;
+
+    if (!isalnum(infix[infixCounter - 2]))
+    {
+        Stack_free(&stackPtr);
+        return -1;
+    } // end if bad end of string
+    
     infix[--infixCounter] = ' ';
     infix[++infixCounter] = ')';
     infix[++infixCounter] = '\0';
