@@ -11,6 +11,7 @@
 #include "modules/commands.h"
 #include "modules/to_postfix_converter.h"
 #include "modules/let_command_hadnler.h"
+#include "modules/helpers.h"
 
 #define STRING_LENGTH   1024
 
@@ -71,37 +72,81 @@ int main(int argc, char ** argv)
         } // end if
 
         commandPartLength += 2;
+        char * argLine = line + commandPartLength;
 
+        if (SymbolTable_findLocation(&symbolTable, lineNumber, LINE) == -1)
+        {
+            if (!SymbolTable_set(
+                    &symbolTable,
+                    lineNumber, 
+                    LINE,
+                    Counters_getInstructionCounter(&counters)))
+            {
+                
+                printf("Line: %d, command %s: symbol table error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }// end if
+        } // end if not in symbol table
+        
         if (strncmp(command, "rem", STRING_LENGTH) == 0)
         {
-            if (SymbolTable_findLocation(&symbolTable, lineNumber, LINE) == -1)
-            {
-                if (!SymbolTable_set(
-                        &symbolTable,
-                        lineNumber, 
-                        LINE,
-                        Counters_getInstructionCounter(&counters)))
-                    return EXIT_FAILURE;
-            } // end if not in symbol table
         } // end if rem
         else if (strncmp(command, "let", STRING_LENGTH) == 0)
         {
-            if (!SymbolTable_set(
-                &symbolTable,
-                lineNumber, 
-                LINE,
-                Counters_getInstructionCounter(&counters)))
-                return EXIT_FAILURE;
-
-            char * argLine = line + commandPartLength;
-
             if (!letCommandHandler(argLine, 
                         &symbolTable,
                         &counters, 
                         postfix,
                         &sml))
+            {
+                printf("Line: %d, command %s: let command parsing error\n",
+                        lineNumber,
+                        command);
                 return EXIT_FAILURE;
+            } // end if 
         } // end else if let
+        else if (strncmp(command, "input", STRING_LENGTH) == 0)
+        {
+            int variableLocation = getOrSetVariableLocaton(argLine[0], &symbolTable, &counters);
+            
+            if (!SmlArray_addCommand(&sml, READ * 100 + variableLocation) || 
+                    Counters_getInstructionCounter(&counters) == -1)
+            {
+                printf("Line: %d, command %s: let command parsing error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }
+            Counters_incrementInstructionCounter(&counters);
+        } // end else if input
+        else if (strncmp(command, "end\n", STRING_LENGTH) == 0)
+        {
+            if (!SmlArray_addCommand(&sml, HALT * 100) || 
+                    Counters_getInstructionCounter(&counters) == -1)
+            {
+                printf("Line: %d, command %s: let command parsing error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }
+            Counters_incrementInstructionCounter(&counters);
+        } // end else if end
+        else if (strncmp(command, "print", STRING_LENGTH) == 0)
+        {
+            int variableLocation = getOrSetVariableLocaton(argLine[0], &symbolTable, &counters);
+            
+            if (!SmlArray_addCommand(&sml, WRITE * 100 + variableLocation) || 
+                    Counters_getInstructionCounter(&counters) == -1)
+            {
+                printf("Line: %d, command %s: let command parsing error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }
+            Counters_incrementInstructionCounter(&counters);
+        } // end else if print
         else
         {
             printf("Incorrect command %s in string %d\n", command, lineNumber);
