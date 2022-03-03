@@ -8,7 +8,7 @@
 40 input x
 50 if x <= m goto 70
 60 let m = x
-70 let k = k - s 
+70 let k = k - s
 80 if k >= 0 goto 40
 90 print m
 100 end
