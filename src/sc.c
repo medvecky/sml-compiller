@@ -14,6 +14,7 @@
 #include "modules/helpers.h"
 
 #define STRING_LENGTH   1024
+#define RAM_SIZE        100
 
 int handleArguments(int argc, char ** argv, char ** outputFileName);
 
@@ -32,6 +33,8 @@ int main(int argc, char ** argv)
     sml.commandCounter = 0;
 
     PostfixEntry postfix[STRING_LENGTH];
+    int flags[RAM_SIZE] = {-1};
+    memset(flags, -1, sizeof flags);
     
     if (handleArguments(argc, argv, &outputFileName) == EXIT_FAILURE)
         return EXIT_FAILURE;
@@ -147,6 +150,36 @@ int main(int argc, char ** argv)
             }
             Counters_incrementInstructionCounter(&counters);
         } // end else if print
+        else if (strncmp(command, "goto", STRING_LENGTH) == 0)
+        {
+            int targetLineNumber = atoi(argLine);
+            int targetLocation = SymbolTable_findLocation(&symbolTable, targetLineNumber, LINE);
+            if (targetLocation == -1)
+            {
+                flags[Counters_getInstructionCounter(&counters)] = targetLineNumber;
+                if (!SmlArray_addCommand(&sml, BRANCH * 100 ) || 
+                        Counters_getInstructionCounter(&counters) == -1)
+                {
+                    printf("Line: %d, command %s: let command parsing error\n",
+                            lineNumber,
+                            command);
+                    return EXIT_FAILURE;
+                }
+                Counters_incrementInstructionCounter(&counters);
+            } // end if line does not exist in symbolTable
+            else
+            {
+                if (!SmlArray_addCommand(&sml, BRANCH * 100 + targetLocation) || 
+                        Counters_getInstructionCounter(&counters) == -1)
+                {
+                    printf("Line: %d, command %s: let command parsing error\n",
+                            lineNumber,
+                            command);
+                    return EXIT_FAILURE;
+                }
+                Counters_incrementInstructionCounter(&counters);
+            } // end else line exists in symbolTable
+        } // end else if goto
         else
         {
             printf("Incorrect command %s in string %d\n", command, lineNumber);
@@ -159,6 +192,7 @@ int main(int argc, char ** argv)
     if (line)
         free(line);
     
+
     puts("SymbolTable:");
     for (size_t counter = 0; counter < SymbolTable_getEntryCount(&symbolTable); counter++)
     {
@@ -170,7 +204,30 @@ int main(int argc, char ** argv)
                 entry->type,
                 entry->location);
     } // end for show symbolTable
-    
+   
+    puts("Falgs:");
+    for (size_t index = 0; index < RAM_SIZE; index ++)
+    {
+        if (flags[index] != -1)
+        {
+            printf("Index: %zu, Line %d\n", index, flags[index]);
+        } // end if unresolved reference detected
+    } // end for check unresolved references
+    for (size_t index = 0; index < RAM_SIZE; index ++)
+    {
+        if (flags[index] != -1)
+        {
+            int location = SymbolTable_findLocation(&symbolTable, flags[index], LINE);
+            if (location == -1)
+            {
+                printf("Unresolved reference %d\n", flags[index]);
+                return EXIT_FAILURE;
+            }
+            int command = SmlArray_getCommand(&sml, index);
+            command += location;
+            SmlArray_editCommand(&sml, index, command);
+        } // end if unresolved reference detected
+    } // end for check unresolved references
     puts("Sml:");
     for (size_t counter = 0; counter < SmlArray_getCounter(&sml); counter++)
     {
