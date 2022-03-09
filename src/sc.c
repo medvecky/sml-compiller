@@ -12,6 +12,8 @@
 #include "modules/to_postfix_converter.h"
 #include "modules/let_command_hadnler.h"
 #include "modules/helpers.h"
+#include "modules/goto_command_handler.h"
+#include "modules/if_goto_command_handler.h"
 
 #define STRING_LENGTH   1024
 #define RAM_SIZE        100
@@ -104,7 +106,7 @@ int main(int argc, char ** argv)
                         postfix,
                         &sml))
             {
-                printf("Line: %d, command %s: let command parsing error\n",
+                printf("Line: %d, command %s: command parsing error\n",
                         lineNumber,
                         command);
                 return EXIT_FAILURE;
@@ -117,7 +119,7 @@ int main(int argc, char ** argv)
             if (!SmlArray_addCommand(&sml, READ * 100 + variableLocation) || 
                     Counters_getInstructionCounter(&counters) == -1)
             {
-                printf("Line: %d, command %s: let command parsing error\n",
+                printf("Line: %d, command %s: command parsing error\n",
                         lineNumber,
                         command);
                 return EXIT_FAILURE;
@@ -129,7 +131,7 @@ int main(int argc, char ** argv)
             if (!SmlArray_addCommand(&sml, HALT * 100) || 
                     Counters_getInstructionCounter(&counters) == -1)
             {
-                printf("Line: %d, command %s: let command parsing error\n",
+                printf("Line: %d, command %s: command parsing error\n",
                         lineNumber,
                         command);
                 return EXIT_FAILURE;
@@ -143,7 +145,7 @@ int main(int argc, char ** argv)
             if (!SmlArray_addCommand(&sml, WRITE * 100 + variableLocation) || 
                     Counters_getInstructionCounter(&counters) == -1)
             {
-                printf("Line: %d, command %s: let command parsing error\n",
+                printf("Line: %d, command %s: command parsing error\n",
                         lineNumber,
                         command);
                 return EXIT_FAILURE;
@@ -152,34 +154,34 @@ int main(int argc, char ** argv)
         } // end else if print
         else if (strncmp(command, "goto", STRING_LENGTH) == 0)
         {
-            int targetLineNumber = atoi(argLine);
-            int targetLocation = SymbolTable_findLocation(&symbolTable, targetLineNumber, LINE);
-            if (targetLocation == -1)
+            if (!gotoCommandHandler(
+                        argLine, 
+                        &symbolTable,
+                        &counters,
+                        &sml,
+                        flags))
             {
-                flags[Counters_getInstructionCounter(&counters)] = targetLineNumber;
-                if (!SmlArray_addCommand(&sml, BRANCH * 100 ) || 
-                        Counters_getInstructionCounter(&counters) == -1)
-                {
-                    printf("Line: %d, command %s: let command parsing error\n",
-                            lineNumber,
-                            command);
-                    return EXIT_FAILURE;
-                }
-                Counters_incrementInstructionCounter(&counters);
-            } // end if line does not exist in symbolTable
-            else
-            {
-                if (!SmlArray_addCommand(&sml, BRANCH * 100 + targetLocation) || 
-                        Counters_getInstructionCounter(&counters) == -1)
-                {
-                    printf("Line: %d, command %s: let command parsing error\n",
-                            lineNumber,
-                            command);
-                    return EXIT_FAILURE;
-                }
-                Counters_incrementInstructionCounter(&counters);
-            } // end else line exists in symbolTable
+                printf("Line: %d, command %s: command parsing error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }
         } // end else if goto
+        else if (strncmp(command, "if", STRING_LENGTH) == 0)
+        {
+            if (!ifGotoCommandHandler(
+                        argLine, 
+                        &symbolTable,
+                        &counters,
+                        &sml,
+                        flags))
+            {
+                printf("Line: %d, command %s: command parsing error\n",
+                        lineNumber,
+                        command);
+                return EXIT_FAILURE;
+            }
+        } // end else if - if goto 
         else
         {
             printf("Incorrect command %s in string %d\n", command, lineNumber);
@@ -272,5 +274,4 @@ int handleArguments(int argc, char ** argv, char ** outputFileName)
 
     return EXIT_SUCCESS;
 } // end function handleArguments 
-
 

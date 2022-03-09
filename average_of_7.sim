@@ -1,9 +1,12 @@
-10 let c = 7;
-20 let s = 0;
-30 input i
-40 let s = s + i
-50 let c = c - 1
-60 if c >= 0 goto 30
-70 let a = s / 7
-80 print a
-90 end
+10 rem number of elements 
+20 input n
+30 rem step 
+40 input k 
+50 rem arg 
+60 input x
+70 let s = s + x
+80 let c = c + k
+90 if c < n goto 60
+100 let r = s / n
+110 print r
+120 end
