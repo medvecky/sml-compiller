@@ -1,5 +1,6 @@
 #include "goto_command_handler.h"
 #include "commands.h"
+#include <stdbool.h>
 #include <stdlib.h>
 
 bool gotoCommandHandler(
@@ -10,6 +11,10 @@ bool gotoCommandHandler(
         int * flags)
 {
     int targetLineNumber = atoi(argLine);
+
+    if (targetLineNumber == 0)
+        return false;
+
     int targetLocation = SymbolTable_findLocation(symbolTable, targetLineNumber, LINE);
     if (targetLocation == -1)
     {

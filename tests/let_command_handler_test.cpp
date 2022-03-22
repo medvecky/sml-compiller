@@ -7,7 +7,7 @@ extern "C"
 #include <let_command_hadnler.h>
 }
 
-TEST_GROUP(REM_COMMAND)
+TEST_GROUP(LET_COMMAND)
 {
     static const int STRING_LENGTH = 1024;
     SymbolTable symbolTable;
@@ -33,7 +33,7 @@ TEST_GROUP(REM_COMMAND)
     }
 };
 
-TEST(REM_COMMAND, simple_good)
+TEST(LET_COMMAND, simple_good)
 {
     std::strcpy(argLine, "x = y\n");
     CHECK(letCommandHandler(
@@ -54,7 +54,7 @@ TEST(REM_COMMAND, simple_good)
     CHECK_EQUAL(2199, SmlArray_getCommand(&sml, 1));
 }
 
-TEST(REM_COMMAND, complex_good)
+TEST(LET_COMMAND, complex_good)
 {
     std::strcpy(argLine, "x = y + z\n");
     CHECK(letCommandHandler(
@@ -82,7 +82,7 @@ TEST(REM_COMMAND, complex_good)
     CHECK_EQUAL(2199, SmlArray_getCommand(&sml, 4));
 }
 
-TEST(REM_COMMAND, bad_arg_string)
+TEST(LET_COMMAND, bad_arg_string)
 {
     std::strcpy(argLine, "x =\n");
     CHECK_FALSE(letCommandHandler(
