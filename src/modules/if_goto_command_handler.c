@@ -41,6 +41,10 @@ bool ifGotoCommandHandler(
     int targetLineNumber = atoi(argLine + 11); 
     int targetLocation = SymbolTable_findLocation(symbolTable, targetLineNumber, LINE);
 
+    // operand1 must be variable only
+    if (!isalpha(operand1))
+        return false;
+    
     if (equalityOperation == '=')
     {
         if (!branchZeroHandler(
