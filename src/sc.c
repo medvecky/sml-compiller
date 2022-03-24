@@ -18,11 +18,16 @@
 #define STRING_LENGTH   1024
 #define RAM_SIZE        100
 
-int handleArguments(int argc, char ** argv, char ** outputFileName);
+int handleArguments(
+        int argc, 
+        char ** argv, 
+        char ** outputFileName, 
+        char ** inputFileName);
 
 int main(int argc, char ** argv)
 {
     char * outputFileName = NULL;
+    char * inputFileName = NULL;
 
     SymbolTable symbolTable;
     symbolTable.entryCounter = 0;
@@ -38,14 +43,18 @@ int main(int argc, char ** argv)
     int flags[RAM_SIZE] = {-1};
     memset(flags, -1, sizeof flags);
     
-    if (handleArguments(argc, argv, &outputFileName) == EXIT_FAILURE)
+    if (handleArguments(
+                argc, 
+                argv,
+                &outputFileName, 
+                &inputFileName) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
-    FILE * sourceFile = fopen(argv[1], "r");
+    FILE * sourceFile = fopen(inputFileName, "r");
 
     if (sourceFile == NULL)
     {
-        printf("Can't open source file: %s", argv[1]);
+        printf("Can't open source file: %s\n", inputFileName);
         puts("USAGE: sc simple_file_name [-o sml_file_name]");
         return EXIT_FAILURE;
     } // end if
@@ -194,28 +203,7 @@ int main(int argc, char ** argv)
     if (line)
         free(line);
     
-
-    puts("SymbolTable:");
-    for (size_t counter = 0; counter < SymbolTable_getEntryCount(&symbolTable); counter++)
-    {
-        TableEntry * entry = SymbolTable_getEntry(&symbolTable, counter); 
-        printf("%zu: Symbol: %d | %c, type: %d, location: %zu\n", 
-                counter,
-                entry->symbol,
-                entry->symbol, 
-                entry->type,
-                entry->location);
-    } // end for show symbolTable
-   
-    puts("Falgs:");
-    for (size_t index = 0; index < RAM_SIZE; index ++)
-    {
-        if (flags[index] != -1)
-        {
-            printf("Index: %zu, Line %d\n", index, flags[index]);
-        } // end if unresolved reference detected
-    } // end for check unresolved references
-    for (size_t index = 0; index < RAM_SIZE; index ++)
+   for (size_t index = 0; index < RAM_SIZE; index ++)
     {
         if (flags[index] != -1)
         {
@@ -229,27 +217,43 @@ int main(int argc, char ** argv)
             command += location;
             SmlArray_editCommand(&sml, index, command);
         } // end if unresolved reference detected
-    } // end for check unresolved references
-    puts("Sml:");
+    } // end for check unresolved references 
+
+    FILE * outputFile = fopen(outputFileName, "w");
+    if (outputFile == NULL)
+    {
+        printf("Can't open outputFile file: %s\n", outputFileName);
+        return EXIT_FAILURE;
+    } // end if can't open outputFile
+    
     for (size_t counter = 0; counter < SmlArray_getCounter(&sml); counter++)
     {
-        printf("%zu\t%d\n", counter, SmlArray_getCommand(&sml, counter));
-    } // end for show symbolTable
+        fprintf(outputFile, "%d\n", SmlArray_getCommand(&sml, counter));
+    } // end for output sml to file
+    
+    fclose(outputFile);
 
-    printf("Data counter: %d, Instruction counter: %d\n",
-            Counters_getDataCounter(&counters),
-            Counters_getInstructionCounter(&counters));
-    puts("End of program.");
+    puts("compilation completed.");
     return EXIT_SUCCESS;
 } // end main
 
-int handleArguments(int argc, char ** argv, char ** outputFileName)
+int handleArguments(
+        int argc, 
+        char ** argv,
+        char ** outputFileName,
+        char ** inputFileName)
 {
+
+    char defaultOutputFileName[] = "out.sml";
+    size_t defaultOutputFileNameLength = strlen(defaultOutputFileName);
+
     if (argc < 2)
     {
         puts("USAGE: sc simple_file_name [-o sml_file_name]");
         return EXIT_FAILURE;
     } // end if
+
+    *inputFileName= argv[1];
 
     int option;
     while ((option = getopt(argc, argv, "o:")) != -1)
@@ -271,6 +275,12 @@ int handleArguments(int argc, char ** argv, char ** outputFileName)
                 return EXIT_FAILURE;
         } // end switch
     } // end while
+    
+    if (*outputFileName == NULL)
+    {
+        *outputFileName = calloc(defaultOutputFileNameLength, sizeof(char));
+        strncpy(*outputFileName, defaultOutputFileName, defaultOutputFileNameLength);
+    }
 
     return EXIT_SUCCESS;
 } // end function handleArguments 
