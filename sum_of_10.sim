@@ -1,0 +1,13 @@
+10 rem input step
+20 input k
+30 rem input limit 
+40 input l
+50 rem arg
+60 input x
+70 rem sum calculating
+80 let s = s + x
+90 let l = l - k
+100 if l = 0 goto 120
+110 goto 60
+120 print s
+130 end

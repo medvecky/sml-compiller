@@ -1,0 +1,9 @@
+10 rem input devider
+20 input d
+30 rem input 3 arguments
+40 input x
+50 input y
+60 input z 
+70 let a = ( x + y + z ) / d
+80 print a
+90 end

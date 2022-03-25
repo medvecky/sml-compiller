@@ -1,0 +1,12 @@
+10 rem number of elements 
+20 input n
+30 rem step 
+40 input k 
+50 rem arg 
+60 input x
+70 let s = s + x
+80 let c = c + k
+90 if c < n goto 60
+100 let r = s / n
+110 print r
+120 end

@@ -1,4 +1,4 @@
-CFLAGS=-g -O2 -Wall -Wextra  -std=c2x -pedantic $(OPTFLAGS)
+CFLAGS=-g -O2 -Wall -Wextra  -std=gnu2x -pedantic $(OPTFLAGS)
 CC=clang
 MODULES_OBJECT_DIR=build/modules
 MODULES_SOURCE_DIR=src/modules
@@ -30,6 +30,7 @@ clean:
 	rm -rf bin
 	rm -rf build
 	rm -f *~
+	rm -f .*~
 	rm -f *.*~
 	rm -f src/*.*~
 	rm -f src/modules/*.*~
